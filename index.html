@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Boris Care — Pet Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #FAF7F2;
+    --warm-white: #FFFFFF;
+    --bark: #2C1F0F;
+    --bark-light: #5C4433;
+    --paw: #C4622D;
+    --paw-light: #E8956A;
+    --paw-muted: #F5DDD0;
+    --leaf: #3D6B4F;
+    --leaf-light: #6FA882;
+    --leaf-muted: #D4EAD9;
+    --sky: #2A5C8A;
+    --sky-light: #5B8AB0;
+    --sky-muted: #D0E3F0;
+    --gold: #B8870A;
+    --gold-muted: #FDF0CC;
+    --danger: #C0392B;
+    --danger-muted: #FAE0DC;
+    --border: rgba(44,31,15,0.1);
+    --shadow: 0 2px 12px rgba(44,31,15,0.08);
+    --shadow-lg: 0 8px 32px rgba(44,31,15,0.12);
+    --radius: 16px;
+    --radius-sm: 10px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
+    color: var(--bark);
+    min-height: 100vh;
+    font-size: 15px;
+  }
+
+  /* TOP NAV */
+  .topbar {
+    background: var(--bark);
+    color: var(--cream);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    height: 56px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .topbar-brand {
+    font-family: 'DM Serif Display', serif;
+    font-size: 20px;
+    letter-spacing: 0.02em;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .topbar-brand span { opacity: 0.5; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 300; }
+  .nav-tabs {
+    display: flex;
+    gap: 4px;
+  }
+  .nav-tab {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    color: rgba(250,247,242,0.6);
+    transition: all 0.2s;
+    border: none;
+    background: none;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .nav-tab:hover { color: var(--cream); background: rgba(255,255,255,0.08); }
+  .nav-tab.active { background: var(--paw); color: white; }
+
+  /* MAIN */
+  .main {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 32px 20px 80px;
+  }
+
+  /* PAGES */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* HERO CARD */
+  .hero {
+    background: var(--bark);
+    border-radius: 24px;
+    padding: 28px;
+    color: var(--cream);
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    margin-bottom: 28px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    right: -20px; top: -20px;
+    width: 180px; height: 180px;
+    border-radius: 50%;
+    background: rgba(196,98,45,0.15);
+  }
+  .hero-paw {
+    width: 72px; height: 72px;
+    border-radius: 50%;
+    background: var(--paw);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 32px;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+  }
+  .hero-info { position: relative; z-index: 1; flex: 1; }
+  .hero-name { font-family: 'DM Serif Display', serif; font-size: 28px; margin-bottom: 4px; }
+  .hero-meta { font-size: 13px; opacity: 0.65; display: flex; gap: 16px; flex-wrap: wrap; }
+  .hero-meta-item { display: flex; align-items: center; gap: 5px; }
+  .senior-tag {
+    background: var(--gold-muted);
+    color: var(--gold);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 20px;
+    display: inline-block;
+    margin-top: 8px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .hero-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    position: relative;
+    z-index: 1;
+  }
+  .hero-stat {
+    background: rgba(255,255,255,0.08);
+    border-radius: 12px;
+    padding: 10px 16px;
+    text-align: center;
+    min-width: 80px;
+  }
+  .hero-stat-val { font-size: 22px; font-weight: 600; }
+  .hero-stat-lbl { font-size: 11px; opacity: 0.6; margin-top: 1px; }
+
+  /* SECTION */
+  .section { margin-bottom: 28px; }
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .section-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 18px;
+    color: var(--bark);
+  }
+
+  /* BUTTONS */
+  .btn {
+    padding: 9px 18px;
+    border-radius: 20px;
+    border: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.18s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn-primary { background: var(--paw); color: white; }
+  .btn-primary:hover { background: var(--bark); }
+  .btn-outline { background: transparent; color: var(--bark); border: 1.5px solid var(--border); }
+  .btn-outline:hover { border-color: var(--paw); color: var(--paw); }
+  .btn-sm { padding: 6px 12px; font-size: 12px; }
+  .btn-danger { background: var(--danger-muted); color: var(--danger); }
+  .btn-danger:hover { background: var(--danger); color: white; }
+
+  /* TASK CARDS */
+  .task-list { display: flex; flex-direction: column; gap: 10px; }
+  .task-card {
+    background: var(--warm-white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    transition: box-shadow 0.2s;
+  }
+  .task-card:hover { box-shadow: var(--shadow); }
+  .task-card.overdue { border-left: 3px solid var(--danger); }
+  .task-card.due-soon { border-left: 3px solid var(--gold); }
+  .task-icon {
+    width: 42px; height: 42px;
+    border-radius: var(--radius-sm);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+  .task-body { flex: 1; min-width: 0; }
+  .task-name { font-weight: 600; font-size: 14px; margin-bottom: 3px; }
+  .task-freq { font-size: 12px; color: var(--bark-light); }
+  .task-note { font-size: 12px; color: var(--bark-light); font-style: italic; margin-top: 2px; }
+  .task-right { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+  .badge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 20px;
+    white-space: nowrap;
+    letter-spacing: 0.02em;
+  }
+  .badge-ok { background: var(--leaf-muted); color: var(--leaf); }
+  .badge-soon { background: var(--gold-muted); color: var(--gold); }
+  .badge-overdue { background: var(--danger-muted); color: var(--danger); }
+  .task-actions { display: flex; gap: 6px; }
+
+  /* EMPTY STATE */
+  .empty {
+    text-align: center;
+    padding: 48px 24px;
+    color: var(--bark-light);
+  }
+  .empty-icon { font-size: 40px; margin-bottom: 12px; }
+  .empty p { font-size: 14px; line-height: 1.6; }
+
+  /* MODAL */
+  .modal-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(44,31,15,0.5);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--warm-white);
+    border-radius: 24px;
+    padding: 28px;
+    width: 100%;
+    max-width: 480px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: var(--shadow-lg);
+  }
+  .modal-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 20px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .modal-close {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: none;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--bark-light);
+  }
+  .modal-close:hover { background: var(--cream); }
+
+  /* FORM */
+  .form-group { margin-bottom: 16px; }
+  .form-label { font-size: 12px; font-weight: 600; color: var(--bark-light); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; display: block; }
+  .form-control {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--bark);
+    background: var(--cream);
+    transition: border-color 0.2s;
+    outline: none;
+  }
+  .form-control:focus { border-color: var(--paw); background: white; }
+  select.form-control { appearance: auto; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .emoji-grid {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 6px;
+    margin-top: 8px;
+  }
+  .emoji-btn {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    border: 1.5px solid var(--border);
+    background: var(--cream);
+    font-size: 18px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+  }
+  .emoji-btn:hover, .emoji-btn.selected { border-color: var(--paw); background: var(--paw-muted); }
+  .form-actions { display: flex; gap: 10px; margin-top: 24px; justify-content: flex-end; }
+
+  /* HEALTH LOG */
+  .health-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .health-card {
+    background: var(--warm-white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px;
+    text-align: center;
+  }
+  .health-card-val { font-size: 28px; font-weight: 600; color: var(--bark); margin: 6px 0 2px; }
+  .health-card-unit { font-size: 12px; color: var(--bark-light); }
+  .health-card-lbl { font-size: 12px; color: var(--bark-light); margin-bottom: 6px; }
+  .health-card-icon { font-size: 22px; }
+  .health-trend { font-size: 11px; margin-top: 4px; }
+  .trend-up { color: var(--danger); }
+  .trend-dn { color: var(--leaf); }
+  .trend-eq { color: var(--bark-light); }
+
+  .log-list { display: flex; flex-direction: column; gap: 8px; }
+  .log-entry {
+    background: var(--warm-white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .log-date { font-size: 12px; color: var(--bark-light); min-width: 80px; }
+  .log-body { flex: 1; }
+  .log-weight { font-weight: 600; font-size: 14px; }
+  .log-note-text { font-size: 12px; color: var(--bark-light); margin-top: 2px; font-style: italic; }
+
+  /* EXPENSES */
+  .expense-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .exp-card {
+    background: var(--warm-white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+  }
+  .exp-card-lbl { font-size: 12px; color: var(--bark-light); margin-bottom: 4px; }
+  .exp-card-val { font-size: 22px; font-weight: 600; color: var(--bark); }
+  .exp-card-sub { font-size: 11px; color: var(--bark-light); margin-top: 2px; }
+
+  .expense-list { display: flex; flex-direction: column; gap: 8px; }
+  .expense-row {
+    background: var(--warm-white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .exp-icon { font-size: 20px; width: 36px; text-align: center; }
+  .exp-body { flex: 1; }
+  .exp-name { font-weight: 600; font-size: 14px; }
+  .exp-cat { font-size: 12px; color: var(--bark-light); }
+  .exp-amount { font-weight: 600; font-size: 15px; color: var(--paw); }
+  .exp-date { font-size: 11px; color: var(--bark-light); }
+
+  /* CATEGORY PILLS */
+  .cat-filter { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+  .cat-pill {
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1.5px solid var(--border);
+    background: var(--cream);
+    color: var(--bark-light);
+    transition: all 0.15s;
+  }
+  .cat-pill:hover, .cat-pill.active { background: var(--bark); color: var(--cream); border-color: var(--bark); }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    bottom: 24px; right: 24px;
+    background: var(--bark);
+    color: var(--cream);
+    padding: 12px 20px;
+    border-radius: 12px;
+    font-size: 14px;
+    z-index: 300;
+    transform: translateY(80px);
+    opacity: 0;
+    transition: all 0.3s;
+    pointer-events: none;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+
+  @media (max-width: 600px) {
+    .hero { flex-wrap: wrap; }
+    .hero-stats { flex-direction: row; }
+    .form-row { grid-template-columns: 1fr; }
+    .topbar { padding: 0 12px; }
+    .nav-tab { padding: 5px 10px; font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-brand">🐾 Boris Care <span>pet tracker</span></div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showPage('tasks')">Tasks</button>
+    <button class="nav-tab" onclick="showPage('health')">Health</button>
+    <button class="nav-tab" onclick="showPage('expenses')">Expenses</button>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-paw">🐕</div>
+    <div class="hero-info">
+      <div class="hero-name">Boris</div>
+      <div class="hero-meta">
+        <span class="hero-meta-item">🐾 Dog</span>
+        <span class="hero-meta-item">🎂 15 years old</span>
+        <span class="hero-meta-item" id="hero-weight-display"></span>
+      </div>
+      <div class="senior-tag">⭐ Senior dog</div>
+    </div>
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <div class="hero-stat-val" id="stat-overdue">0</div>
+        <div class="hero-stat-lbl">Overdue</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-val" id="stat-soon">0</div>
+        <div class="hero-stat-lbl">Due soon</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TASKS PAGE -->
+  <div class="page active" id="page-tasks">
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">Recurring Tasks</div>
+        <button class="btn btn-primary" onclick="openTaskModal()">+ Add task</button>
+      </div>
+      <div class="cat-filter" id="task-filter">
+        <div class="cat-pill active" onclick="filterTasks('all', this)">All</div>
+        <div class="cat-pill" onclick="filterTasks('food', this)">Food</div>
+        <div class="cat-pill" onclick="filterTasks('wellness', this)">Wellness</div>
+        <div class="cat-pill" onclick="filterTasks('vet', this)">Vet</div>
+        <div class="cat-pill" onclick="filterTasks('grooming', this)">Grooming</div>
+        <div class="cat-pill" onclick="filterTasks('supplies', this)">Supplies</div>
+      </div>
+      <div class="task-list" id="task-list"></div>
+    </div>
+  </div>
+
+  <!-- HEALTH PAGE -->
+  <div class="page" id="page-health">
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">Health Overview</div>
+        <button class="btn btn-primary" onclick="openHealthModal()">+ Log entry</button>
+      </div>
+      <div class="health-grid">
+        <div class="health-card">
+          <div class="health-card-icon">⚖️</div>
+          <div class="health-card-lbl">Current weight</div>
+          <div class="health-card-val" id="current-weight">—</div>
+          <div class="health-card-unit">kg</div>
+          <div class="health-trend" id="weight-trend"></div>
+        </div>
+        <div class="health-card">
+          <div class="health-card-icon">📅</div>
+          <div class="health-card-lbl">Last logged</div>
+          <div class="health-card-val" id="last-logged" style="font-size:16px;margin-top:12px;">—</div>
+        </div>
+        <div class="health-card">
+          <div class="health-card-icon">📊</div>
+          <div class="health-card-lbl">Total entries</div>
+          <div class="health-card-val" id="total-entries">0</div>
+        </div>
+        <div class="health-card">
+          <div class="health-card-icon">🏥</div>
+          <div class="health-card-lbl">Last vet visit</div>
+          <div class="health-card-val" id="last-vet" style="font-size:14px;margin-top:10px;">—</div>
+        </div>
+      </div>
+      <div class="section-header" style="margin-top:20px;">
+        <div class="section-title" style="font-size:16px;">Weight history</div>
+      </div>
+      <div class="log-list" id="health-log"></div>
+    </div>
+  </div>
+
+  <!-- EXPENSES PAGE -->
+  <div class="page" id="page-expenses">
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">Expense Tracker</div>
+        <button class="btn btn-primary" onclick="openExpenseModal()">+ Add expense</button>
+      </div>
+      <div class="expense-summary">
+        <div class="exp-card">
+          <div class="exp-card-lbl">This month</div>
+          <div class="exp-card-val" id="exp-month">$0</div>
+          <div class="exp-card-sub">total spent</div>
+        </div>
+        <div class="exp-card">
+          <div class="exp-card-lbl">This year</div>
+          <div class="exp-card-val" id="exp-year">$0</div>
+          <div class="exp-card-sub">total spent</div>
+        </div>
+        <div class="exp-card">
+          <div class="exp-card-lbl">All time</div>
+          <div class="exp-card-val" id="exp-total">$0</div>
+          <div class="exp-card-sub">total spent</div>
+        </div>
+      </div>
+      <div class="cat-filter" id="exp-filter">
+        <div class="cat-pill active" onclick="filterExpenses('all', this)">All</div>
+        <div class="cat-pill" onclick="filterExpenses('food', this)">Food</div>
+        <div class="cat-pill" onclick="filterExpenses('vet', this)">Vet</div>
+        <div class="cat-pill" onclick="filterExpenses('wellness', this)">Wellness</div>
+        <div class="cat-pill" onclick="filterExpenses('grooming', this)">Grooming</div>
+        <div class="cat-pill" onclick="filterExpenses('supplies', this)">Supplies</div>
+        <div class="cat-pill" onclick="filterExpenses('other', this)">Other</div>
+      </div>
+      <div class="expense-list" id="expense-list"></div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<!-- TASK MODAL -->
+<div class="modal-overlay" id="task-modal">
+  <div class="modal">
+    <div class="modal-title">
+      Add recurring task
+      <button class="modal-close" onclick="closeModal('task-modal')">✕</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Task name</label>
+      <input class="form-control" id="t-name" placeholder="e.g. Order meals, Vet check-up…">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Category</label>
+      <select class="form-control" id="t-cat">
+        <option value="food">🍖 Food & Meals</option>
+        <option value="vet">🏥 Vet & Medical</option>
+        <option value="wellness">💆 Wellness (Massage / Acupuncture)</option>
+        <option value="grooming">✨ Grooming</option>
+        <option value="supplies">💊 Supplements & Supplies</option>
+        <option value="other">📌 Other</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Pick an icon</label>
+      <div class="emoji-grid" id="emoji-grid">
+        <button class="emoji-btn selected" data-emoji="🍖">🍖</button>
+        <button class="emoji-btn" data-emoji="🥩">🥩</button>
+        <button class="emoji-btn" data-emoji="🐟">🐟</button>
+        <button class="emoji-btn" data-emoji="🏥">🏥</button>
+        <button class="emoji-btn" data-emoji="💊">💊</button>
+        <button class="emoji-btn" data-emoji="💉">💉</button>
+        <button class="emoji-btn" data-emoji="💆">💆</button>
+        <button class="emoji-btn" data-emoji="🌿">🌿</button>
+        <button class="emoji-btn" data-emoji="✨">✨</button>
+        <button class="emoji-btn" data-emoji="🛁">🛁</button>
+        <button class="emoji-btn" data-emoji="🦷">🦷</button>
+        <button class="emoji-btn" data-emoji="🐾">🐾</button>
+        <button class="emoji-btn" data-emoji="🎾">🎾</button>
+        <button class="emoji-btn" data-emoji="🧴">🧴</button>
+        <button class="emoji-btn" data-emoji="📦">📦</button>
+        <button class="emoji-btn" data-emoji="🛒">🛒</button>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Frequency</label>
+        <select class="form-control" id="t-freq">
+          <option value="7">Every week</option>
+          <option value="14">Every 2 weeks</option>
+          <option value="21">Every 3 weeks</option>
+          <option value="30">Every month</option>
+          <option value="42">Every 6 weeks</option>
+          <option value="60">Every 2 months</option>
+          <option value="90">Every 3 months</option>
+          <option value="180">Every 6 months</option>
+          <option value="365">Every year</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Last done</label>
+        <input class="form-control" type="date" id="t-last">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Note / Provider (optional)</label>
+      <input class="form-control" id="t-note" placeholder="e.g. Dr. Lim Clinic, Hills Science Diet">
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-outline" onclick="closeModal('task-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveTask()">Save task</button>
+    </div>
+  </div>
+</div>
+
+<!-- HEALTH MODAL -->
+<div class="modal-overlay" id="health-modal">
+  <div class="modal">
+    <div class="modal-title">
+      Log health entry
+      <button class="modal-close" onclick="closeModal('health-modal')">✕</button>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Weight (kg)</label>
+        <input class="form-control" type="number" step="0.1" id="h-weight" placeholder="e.g. 12.5">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Date</label>
+        <input class="form-control" type="date" id="h-date">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Notes (optional)</label>
+      <input class="form-control" id="h-note" placeholder="e.g. Vet visit, energy level good…">
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-outline" onclick="closeModal('health-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveHealth()">Save entry</button>
+    </div>
+  </div>
+</div>
+
+<!-- EXPENSE MODAL -->
+<div class="modal-overlay" id="expense-modal">
+  <div class="modal">
+    <div class="modal-title">
+      Add expense
+      <button class="modal-close" onclick="closeModal('expense-modal')">✕</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Description</label>
+      <input class="form-control" id="e-name" placeholder="e.g. Hills Science Diet 12kg bag">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Amount ($)</label>
+        <input class="form-control" type="number" step="0.01" id="e-amount" placeholder="0.00">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Date</label>
+        <input class="form-control" type="date" id="e-date">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Category</label>
+      <select class="form-control" id="e-cat">
+        <option value="food">Food & Meals</option>
+        <option value="vet">Vet & Medical</option>
+        <option value="wellness">Wellness</option>
+        <option value="grooming">Grooming</option>
+        <option value="supplies">Supplements & Supplies</option>
+        <option value="other">Other</option>
+      </select>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-outline" onclick="closeModal('expense-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveExpense()">Save expense</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ── STATE ──────────────────────────────────────────────
+const STORAGE_KEY = 'boris_care_v1';
+let state = { tasks: [], healthLog: [], expenses: [] };
+let selectedEmoji = '🍖';
+let editingTaskId = null;
+let taskFilter = 'all';
+let expFilter = 'all';
+
+function load() {
+  try {
+    const s = localStorage.getItem(STORAGE_KEY);
+    if (s) state = JSON.parse(s);
+  } catch(e) {}
+  if (!state.tasks) state.tasks = [];
+  if (!state.healthLog) state.healthLog = [];
+  if (!state.expenses) state.expenses = [];
+}
+
+function save() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+// ── NAVIGATION ─────────────────────────────────────────
+function showPage(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  event.currentTarget.classList.add('active');
+  if (page === 'tasks') renderTasks();
+  if (page === 'health') renderHealth();
+  if (page === 'expenses') renderExpenses();
+}
+
+// ── TASKS ──────────────────────────────────────────────
+const CAT_COLORS = {
+  food: { bg: '#FFF3E0', icon: '#E65100' },
+  vet: { bg: '#E3F2FD', icon: '#0D47A1' },
+  wellness: { bg: '#F3E5F5', icon: '#4A148C' },
+  grooming: { bg: '#E8F5E9', icon: '#1B5E20' },
+  supplies: { bg: '#FBE9E7', icon: '#BF360C' },
+  other: { bg: '#F5F5F5', icon: '#424242' }
+};
+
+const CAT_ICONS = { food:'🍖', vet:'🏥', wellness:'💆', grooming:'✨', supplies:'💊', other:'📌' };
+
+function getDaysUntilDue(task) {
+  const last = new Date(task.lastDone);
+  const next = new Date(last.getTime() + task.frequencyDays * 86400000);
+  const today = new Date(); today.setHours(0,0,0,0);
+  return Math.round((next - today) / 86400000);
+}
+
+function getBadge(days) {
+  if (days < 0) return { text: `${Math.abs(days)}d overdue`, cls: 'badge-overdue', cardCls: 'overdue' };
+  if (days === 0) return { text: 'Due today', cls: 'badge-overdue', cardCls: 'overdue' };
+  if (days <= 5) return { text: `Due in ${days}d`, cls: 'badge-soon', cardCls: 'due-soon' };
+  return { text: `In ${days}d`, cls: 'badge-ok', cardCls: '' };
+}
+
+function renderTasks() {
+  const list = document.getElementById('task-list');
+  let tasks = [...state.tasks];
+  if (taskFilter !== 'all') tasks = tasks.filter(t => t.category === taskFilter);
+  tasks.sort((a, b) => getDaysUntilDue(a) - getDaysUntilDue(b));
+
+  let overdue = 0, soon = 0;
+  state.tasks.forEach(t => {
+    const d = getDaysUntilDue(t);
+    if (d < 0) overdue++;
+    else if (d <= 5) soon++;
+  });
+  document.getElementById('stat-overdue').textContent = overdue;
+  document.getElementById('stat-soon').textContent = soon;
+
+  if (!tasks.length) {
+    list.innerHTML = `<div class="empty"><div class="empty-icon">🐾</div><p>No tasks yet.<br>Add Boris's first recurring task!</p></div>`;
+    return;
+  }
+  list.innerHTML = tasks.map(t => {
+    const days = getDaysUntilDue(t);
+    const badge = getBadge(days);
+    const col = CAT_COLORS[t.category] || CAT_COLORS.other;
+    const freqLabel = freqText(t.frequencyDays);
+    return `
+    <div class="task-card ${badge.cardCls}" data-id="${t.id}">
+      <div class="task-icon" style="background:${col.bg}">${t.emoji || CAT_ICONS[t.category] || '📌'}</div>
+      <div class="task-body">
+        <div class="task-name">${t.name}</div>
+        <div class="task-freq">${freqLabel}</div>
+        ${t.note ? `<div class="task-note">${t.note}</div>` : ''}
+      </div>
+      <div class="task-right">
+        <span class="badge ${badge.cls}">${badge.text}</span>
+        <div class="task-actions">
+          <button class="btn btn-sm btn-outline" onclick="markDone('${t.id}')">Done ✓</button>
+          <button class="btn btn-sm btn-outline" onclick="deleteTask('${t.id}')">✕</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function freqText(days) {
+  const map = {7:'Every week',14:'Every 2 weeks',21:'Every 3 weeks',30:'Every month',42:'Every 6 weeks',60:'Every 2 months',90:'Every 3 months',180:'Every 6 months',365:'Every year'};
+  return map[days] || `Every ${days} days`;
+}
+
+function filterTasks(cat, el) {
+  taskFilter = cat;
+  document.querySelectorAll('#task-filter .cat-pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  renderTasks();
+}
+
+function markDone(id) {
+  const t = state.tasks.find(x => x.id === id);
+  if (t) { t.lastDone = new Date().toISOString().split('T')[0]; save(); renderTasks(); showToast('✓ Marked as done!'); }
+}
+
+function deleteTask(id) {
+  if (!confirm('Delete this task?')) return;
+  state.tasks = state.tasks.filter(x => x.id !== id);
+  save(); renderTasks(); showToast('Task deleted');
+}
+
+function openTaskModal() {
+  editingTaskId = null;
+  document.getElementById('t-name').value = '';
+  document.getElementById('t-note').value = '';
+  document.getElementById('t-freq').value = '14';
+  document.getElementById('t-cat').value = 'food';
+  document.getElementById('t-last').value = today();
+  selectedEmoji = '🍖';
+  document.querySelectorAll('.emoji-btn').forEach(b => b.classList.toggle('selected', b.dataset.emoji === '🍖'));
+  document.getElementById('task-modal').classList.add('open');
+}
+
+function saveTask() {
+  const name = document.getElementById('t-name').value.trim();
+  if (!name) { showToast('Please enter a task name'); return; }
+  const task = {
+    id: editingTaskId || Date.now().toString(),
+    name,
+    category: document.getElementById('t-cat').value,
+    emoji: selectedEmoji,
+    frequencyDays: parseInt(document.getElementById('t-freq').value),
+    lastDone: document.getElementById('t-last').value,
+    note: document.getElementById('t-note').value.trim()
+  };
+  if (editingTaskId) {
+    const idx = state.tasks.findIndex(x => x.id === editingTaskId);
+    state.tasks[idx] = task;
+  } else {
+    state.tasks.push(task);
+  }
+  save(); closeModal('task-modal'); renderTasks();
+  showToast('Task saved!');
+}
+
+// ── HEALTH LOG ─────────────────────────────────────────
+function renderHealth() {
+  const logs = [...state.healthLog].sort((a,b) => new Date(b.date) - new Date(a.date));
+  document.getElementById('total-entries').textContent = logs.length;
+
+  if (logs.length) {
+    const latest = logs[0];
+    document.getElementById('current-weight').textContent = latest.weight;
+    document.getElementById('last-logged').textContent = formatDate(latest.date);
+    document.getElementById('hero-weight-display').textContent = `⚖️ ${latest.weight} kg`;
+
+    if (logs.length >= 2) {
+      const prev = logs[1];
+      const diff = (parseFloat(latest.weight) - parseFloat(prev.weight)).toFixed(1);
+      const trend = document.getElementById('weight-trend');
+      if (diff > 0) trend.innerHTML = `<span class="trend-up">↑ ${diff} kg from last</span>`;
+      else if (diff < 0) trend.innerHTML = `<span class="trend-dn">↓ ${Math.abs(diff)} kg from last</span>`;
+      else trend.innerHTML = `<span class="trend-eq">→ no change</span>`;
+    }
+  }
+
+  const vetTask = state.tasks.find(t => t.category === 'vet');
+  if (vetTask) document.getElementById('last-vet').textContent = formatDate(vetTask.lastDone);
+
+  const logEl = document.getElementById('health-log');
+  if (!logs.length) {
+    logEl.innerHTML = `<div class="empty"><div class="empty-icon">📊</div><p>No health entries yet.<br>Log Boris's first weight!</p></div>`;
+    return;
+  }
+  logEl.innerHTML = logs.map(l => `
+    <div class="log-entry">
+      <div class="log-date">${formatDate(l.date)}</div>
+      <div class="log-body">
+        <div class="log-weight">${l.weight} kg</div>
+        ${l.note ? `<div class="log-note-text">${l.note}</div>` : ''}
+      </div>
+      <button class="btn btn-sm btn-danger" onclick="deleteHealth('${l.id}')">✕</button>
+    </div>`).join('');
+}
+
+function openHealthModal() {
+  document.getElementById('h-weight').value = '';
+  document.getElementById('h-note').value = '';
+  document.getElementById('h-date').value = today();
+  document.getElementById('health-modal').classList.add('open');
+}
+
+function saveHealth() {
+  const w = document.getElementById('h-weight').value;
+  if (!w) { showToast('Please enter a weight'); return; }
+  state.healthLog.push({ id: Date.now().toString(), weight: parseFloat(w).toFixed(1), date: document.getElementById('h-date').value, note: document.getElementById('h-note').value.trim() });
+  save(); closeModal('health-modal'); renderHealth(); showToast('Health entry saved!');
+}
+
+function deleteHealth(id) {
+  state.healthLog = state.healthLog.filter(x => x.id !== id);
+  save(); renderHealth();
+}
+
+// ── EXPENSES ───────────────────────────────────────────
+const EXP_ICONS = { food:'🍖', vet:'🏥', wellness:'💆', grooming:'✨', supplies:'💊', other:'📌' };
+
+function renderExpenses() {
+  const now = new Date();
+  const thisMonth = now.getMonth();
+  const thisYear = now.getFullYear();
+
+  let monthTotal = 0, yearTotal = 0, allTotal = 0;
+  state.expenses.forEach(e => {
+    const d = new Date(e.date);
+    allTotal += e.amount;
+    if (d.getFullYear() === thisYear) yearTotal += e.amount;
+    if (d.getFullYear() === thisYear && d.getMonth() === thisMonth) monthTotal += e.amount;
+  });
+
+  document.getElementById('exp-month').textContent = '$' + monthTotal.toFixed(2);
+  document.getElementById('exp-year').textContent = '$' + yearTotal.toFixed(2);
+  document.getElementById('exp-total').textContent = '$' + allTotal.toFixed(2);
+
+  let expenses = [...state.expenses].sort((a,b) => new Date(b.date) - new Date(a.date));
+  if (expFilter !== 'all') expenses = expenses.filter(e => e.category === expFilter);
+
+  const list = document.getElementById('expense-list');
+  if (!expenses.length) {
+    list.innerHTML = `<div class="empty"><div class="empty-icon">💰</div><p>No expenses yet.<br>Start tracking Boris's costs!</p></div>`;
+    return;
+  }
+  list.innerHTML = expenses.map(e => `
+    <div class="expense-row">
+      <div class="exp-icon">${EXP_ICONS[e.category] || '📌'}</div>
+      <div class="exp-body">
+        <div class="exp-name">${e.name}</div>
+        <div class="exp-cat">${e.category} · <span class="exp-date">${formatDate(e.date)}</span></div>
+      </div>
+      <div style="text-align:right">
+        <div class="exp-amount">$${parseFloat(e.amount).toFixed(2)}</div>
+        <button class="btn btn-sm btn-danger" style="margin-top:4px" onclick="deleteExpense('${e.id}')">✕</button>
+      </div>
+    </div>`).join('');
+}
+
+function filterExpenses(cat, el) {
+  expFilter = cat;
+  document.querySelectorAll('#exp-filter .cat-pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  renderExpenses();
+}
+
+function openExpenseModal() {
+  document.getElementById('e-name').value = '';
+  document.getElementById('e-amount').value = '';
+  document.getElementById('e-date').value = today();
+  document.getElementById('expense-modal').classList.add('open');
+}
+
+function saveExpense() {
+  const name = document.getElementById('e-name').value.trim();
+  const amount = parseFloat(document.getElementById('e-amount').value);
+  if (!name || isNaN(amount) || amount <= 0) { showToast('Please fill in all fields'); return; }
+  state.expenses.push({ id: Date.now().toString(), name, amount, date: document.getElementById('e-date').value, category: document.getElementById('e-cat').value });
+  save(); closeModal('expense-modal'); renderExpenses(); showToast('Expense saved!');
+}
+
+function deleteExpense(id) {
+  state.expenses = state.expenses.filter(x => x.id !== id);
+  save(); renderExpenses();
+}
+
+// ── MODAL ──────────────────────────────────────────────
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
+});
+
+// ── EMOJI PICKER ───────────────────────────────────────
+document.getElementById('emoji-grid').addEventListener('click', e => {
+  const btn = e.target.closest('.emoji-btn');
+  if (!btn) return;
+  selectedEmoji = btn.dataset.emoji;
+  document.querySelectorAll('.emoji-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+});
+
+// ── UTILS ──────────────────────────────────────────────
+function today() { return new Date().toISOString().split('T')[0]; }
+function formatDate(d) {
+  if (!d) return '—';
+  const dt = new Date(d + 'T00:00:00');
+  return dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ── SEED DATA ──────────────────────────────────────────
+function seedIfEmpty() {
+  if (state.tasks.length > 0) return;
+  const t = today();
+  const daysAgo = n => {
+    const d = new Date(); d.setDate(d.getDate() - n);
+    return d.toISOString().split('T')[0];
+  };
+  state.tasks = [
+    { id:'1', name:'Order pet meals', category:'food', emoji:'🍖', frequencyDays:14, lastDone: daysAgo(16), note:'Hills Science Diet Senior' },
+    { id:'2', name:'Massage booking', category:'wellness', emoji:'💆', frequencyDays:30, lastDone: daysAgo(28), note:'Senior mobility support' },
+    { id:'3', name:'Acupuncture', category:'wellness', emoji:'🌿', frequencyDays:14, lastDone: daysAgo(11), note:'Pain management — senior dog' },
+    { id:'4', name:'Vet check-up', category:'vet', emoji:'🏥', frequencyDays:90, lastDone: daysAgo(20), note:'' },
+    { id:'5', name:'Grooming', category:'grooming', emoji:'✨', frequencyDays:42, lastDone: daysAgo(10), note:'' },
+    { id:'6', name:'Buy supplements', category:'supplies', emoji:'💊', frequencyDays:30, lastDone: daysAgo(14), note:'Glucosamine + Omega 3' },
+  ];
+  save();
+}
+
+// ── INIT ───────────────────────────────────────────────
+load();
+seedIfEmpty();
+renderTasks();
+</script>
+</body>
+</html>
