@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Boris Care — Pet Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--cream:#FAF7F2;--warm-white:#FFFFFF;--bark:#2C1F0F;--bark-light:#5C4433;--paw:#C4622D;--paw-muted:#F5DDD0;--leaf:#3D6B4F;--leaf-muted:#D4EAD9;--sky:#2A5C8A;--sky-muted:#D0E3F0;--gold:#B8870A;--gold-muted:#FDF0CC;--danger:#C0392B;--danger-muted:#FAE0DC;--border:rgba(44,31,15,0.1);--shadow:0 2px 12px rgba(44,31,15,0.08);--shadow-lg:0 8px 32px rgba(44,31,15,0.14);--radius:16px;--radius-sm:10px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--bark);min-height:100vh;font-size:15px}
+.topbar{background:var(--bark);color:var(--cream);display:flex;align-items:center;justify-content:space-between;padding:0 18px;height:56px;position:sticky;top:0;z-index:100;gap:10px}
+.topbar-brand{font-family:'DM Serif Display',serif;font-size:18px;display:flex;align-items:center;gap:8px;white-space:nowrap}
+.topbar-brand span{opacity:.4;font-family:'DM Sans',sans-serif;font-size:11px}
+.nav-tabs{display:flex;gap:3px}
+.nav-tab{padding:5px 11px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;color:rgba(250,247,242,.55);transition:all .2s;border:none;background:none;font-family:'DM Sans',sans-serif;white-space:nowrap}
+.nav-tab:hover{color:var(--cream);background:rgba(255,255,255,.08)}
+.nav-tab.active{background:var(--paw);color:white}
+.main{max-width:860px;margin:0 auto;padding:24px 14px 72px}
+.page{display:none}.page.active{display:block}
+.hero{background:var(--bark);border-radius:20px;padding:22px 26px;color:var(--cream);display:flex;align-items:center;gap:18px;margin-bottom:22px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;right:-20px;top:-20px;width:150px;height:150px;border-radius:50%;background:rgba(196,98,45,.15);pointer-events:none}
+.hero-paw{width:62px;height:62px;border-radius:50%;background:var(--paw);display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0;position:relative;z-index:1}
+.hero-info{position:relative;z-index:1;flex:1;min-width:0}
+.hero-name{font-family:'DM Serif Display',serif;font-size:24px;margin-bottom:4px}
+.hero-meta{font-size:12px;opacity:.65;display:flex;gap:12px;flex-wrap:wrap}
+.senior-tag{background:var(--gold-muted);color:var(--gold);font-size:10px;font-weight:600;padding:3px 10px;border-radius:20px;display:inline-block;margin-top:6px;letter-spacing:.05em;text-transform:uppercase}
+.hero-stats{display:flex;gap:7px;position:relative;z-index:1}
+.hero-stat{background:rgba(255,255,255,.09);border-radius:11px;padding:9px 12px;text-align:center;min-width:66px}
+.hero-stat-val{font-size:19px;font-weight:600}
+.hero-stat-lbl{font-size:10px;opacity:.6;margin-top:1px}
+.section{margin-bottom:22px}
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:11px;flex-wrap:wrap;gap:8px}
+.section-title{font-family:'DM Serif Display',serif;font-size:18px}
+.btn{padding:8px 16px;border-radius:20px;border:none;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .18s;display:inline-flex;align-items:center;gap:5px}
+.btn-primary{background:var(--paw);color:white}.btn-primary:hover{background:var(--bark)}
+.btn-outline{background:transparent;color:var(--bark);border:1.5px solid var(--border)}.btn-outline:hover{border-color:var(--paw);color:var(--paw)}
+.btn-ghost{background:transparent;color:var(--bark-light);border:none;padding:5px 7px}.btn-ghost:hover{color:var(--paw)}
+.btn-sm{padding:5px 10px;font-size:12px}
+.btn-danger{background:var(--danger-muted);color:var(--danger)}.btn-danger:hover{background:var(--danger);color:white}
+.btn-warn{background:var(--gold-muted);color:var(--gold)}.btn-warn:hover{background:var(--gold);color:white}
+.notif-banner{background:var(--sky-muted);border:1px solid rgba(42,92,138,.2);border-radius:var(--radius);padding:13px 16px;display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.notif-banner.hidden{display:none}
+.notif-banner-text{flex:1;font-size:13px;color:var(--sky)}
+.notif-banner-text strong{display:block;margin-bottom:2px;font-size:14px}
+.task-list{display:flex;flex-direction:column;gap:9px}
+.task-card{background:var(--warm-white);border:1px solid var(--border);border-radius:var(--radius);padding:13px 15px;display:flex;align-items:center;gap:11px;transition:box-shadow .2s}
+.task-card:hover{box-shadow:var(--shadow)}
+.task-card.overdue{border-left:3px solid var(--danger)}
+.task-card.due-soon{border-left:3px solid var(--gold)}
+.task-icon{width:38px;height:38px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.task-body{flex:1;min-width:0}
+.task-name{font-weight:600;font-size:14px;margin-bottom:2px}
+.task-freq{font-size:12px;color:var(--bark-light)}
+.task-note{font-size:11px;color:var(--bark-light);font-style:italic;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.task-notif{font-size:11px;color:var(--sky);display:flex;align-items:center;gap:3px;cursor:pointer;margin-top:3px;user-select:none}
+.task-notif.off{color:var(--bark-light)}
+.task-right{display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0}
+.badge{font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;white-space:nowrap}
+.badge-ok{background:var(--leaf-muted);color:var(--leaf)}
+.badge-soon{background:var(--gold-muted);color:var(--gold)}
+.badge-overdue{background:var(--danger-muted);color:var(--danger)}
+.task-actions{display:flex;gap:4px}
+.empty{text-align:center;padding:40px 20px;color:var(--bark-light)}
+.empty-icon{font-size:36px;margin-bottom:10px}
+.empty p{font-size:14px;line-height:1.6}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(44,31,15,.5);z-index:200;align-items:center;justify-content:center;padding:14px}
+.modal-overlay.open{display:flex}
+.modal{background:var(--warm-white);border-radius:20px;padding:24px;width:100%;max-width:480px;max-height:92vh;overflow-y:auto;box-shadow:var(--shadow-lg)}
+.modal-title{font-family:'DM Serif Display',serif;font-size:19px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center}
+.modal-close{width:28px;height:28px;border-radius:50%;border:1px solid var(--border);background:none;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;color:var(--bark-light)}
+.modal-close:hover{background:var(--cream)}
+.form-group{margin-bottom:13px}
+.form-label{font-size:11px;font-weight:600;color:var(--bark-light);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px;display:block}
+.form-control{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;font-size:14px;color:var(--bark);background:var(--cream);transition:border-color .2s;outline:none}
+.form-control:focus{border-color:var(--paw);background:white}
+select.form-control{appearance:auto}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.emoji-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:5px;margin-top:6px}
+.emoji-btn{width:32px;height:32px;border-radius:7px;border:1.5px solid var(--border);background:var(--cream);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.emoji-btn:hover,.emoji-btn.selected{border-color:var(--paw);background:var(--paw-muted)}
+.form-actions{display:flex;gap:8px;margin-top:18px;justify-content:flex-end}
+.divider{height:1px;background:var(--border);margin:14px 0}
+.notif-option-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)}
+.health-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px}
+.health-card{background:var(--warm-white);border:1px solid var(--border);border-radius:var(--radius);padding:15px;text-align:center}
+.health-card-icon{font-size:20px}
+.health-card-lbl{font-size:11px;color:var(--bark-light);margin:4px 0 2px}
+.health-card-val{font-size:24px;font-weight:600}
+.health-card-unit{font-size:11px;color:var(--bark-light)}
+.health-trend{font-size:11px;margin-top:3px}
+.trend-up{color:var(--danger)}.trend-dn{color:var(--leaf)}.trend-eq{color:var(--bark-light)}
+.log-list{display:flex;flex-direction:column;gap:7px}
+.log-entry{background:var(--warm-white);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 13px;display:flex;align-items:center;gap:9px}
+.log-date{font-size:12px;color:var(--bark-light);min-width:78px}
+.log-body{flex:1}
+.log-weight{font-weight:600;font-size:14px}
+.log-note-text{font-size:11px;color:var(--bark-light);margin-top:1px;font-style:italic}
+.expense-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:16px}
+.exp-card{background:var(--warm-white);border:1px solid var(--border);border-radius:var(--radius);padding:13px 15px}
+.exp-card-lbl{font-size:11px;color:var(--bark-light);margin-bottom:3px}
+.exp-card-val{font-size:19px;font-weight:600}
+.exp-card-sub{font-size:11px;color:var(--bark-light);margin-top:1px}
+.expense-list{display:flex;flex-direction:column;gap:7px}
+.expense-row{background:var(--warm-white);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 13px;display:flex;align-items:center;gap:9px}
+.exp-icon{font-size:18px;width:32px;text-align:center;flex-shrink:0}
+.exp-body{flex:1;min-width:0}
+.exp-name{font-weight:600;font-size:14px}
+.exp-cat{font-size:11px;color:var(--bark-light)}
+.exp-amount{font-weight:600;font-size:14px;color:var(--paw);flex-shrink:0}
+.cat-filter{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.cat-pill{padding:4px 12px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;border:1.5px solid var(--border);background:var(--cream);color:var(--bark-light);transition:all .15s}
+.cat-pill:hover,.cat-pill.active{background:var(--bark);color:var(--cream);border-color:var(--bark)}
+.ai-page{display:flex;flex-direction:column}
+.api-setup{background:var(--warm-white);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px}
+.api-setup-title{font-weight:600;font-size:14px;margin-bottom:7px}
+.api-row{display:flex;gap:7px}
+.api-input{flex:1;padding:8px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;background:var(--cream);color:var(--bark)}
+.api-input:focus{border-color:var(--paw)}
+.api-status{font-size:12px;margin-top:5px;color:var(--bark-light)}
+.api-status.ok{color:var(--leaf)}.api-status.err{color:var(--danger)}
+.chat-window{min-height:300px;max-height:420px;overflow-y:auto;display:flex;flex-direction:column;gap:11px;padding:4px 0 12px}
+.chat-bubble{max-width:88%;display:flex;flex-direction:column;gap:3px}
+.chat-bubble.user{align-self:flex-end;align-items:flex-end}
+.chat-bubble.ai{align-self:flex-start;align-items:flex-start}
+.bubble-inner{padding:10px 14px;border-radius:17px;font-size:14px;line-height:1.6}
+.chat-bubble.user .bubble-inner{background:var(--paw);color:white;border-bottom-right-radius:4px}
+.chat-bubble.ai .bubble-inner{background:var(--warm-white);border:1px solid var(--border);color:var(--bark);border-bottom-left-radius:4px}
+.bubble-inner p{margin-bottom:6px}.bubble-inner p:last-child{margin-bottom:0}
+.bubble-inner strong{font-weight:600}
+.bubble-inner ul{padding-left:17px;margin:4px 0}.bubble-inner li{margin-bottom:3px}
+.bubble-time{font-size:10px;color:var(--bark-light);padding:0 3px}
+.ai-avatar{width:24px;height:24px;border-radius:50%;background:var(--paw);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;margin-bottom:3px}
+.typing-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--bark-light);animation:bounce 1.2s infinite;margin:0 1px}
+.typing-dot:nth-child(2){animation-delay:.2s}.typing-dot:nth-child(3){animation-delay:.4s}
+@keyframes bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-5px)}}
+.chat-input-row{display:flex;gap:7px;align-items:flex-end;padding-top:11px;border-top:1px solid var(--border);margin-top:7px}
+.chat-input{flex:1;padding:9px 14px;border:1.5px solid var(--border);border-radius:20px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--bark);background:var(--warm-white);outline:none;resize:none;min-height:40px;max-height:100px;overflow-y:auto}
+.chat-input:focus{border-color:var(--paw)}
+.chat-send{width:40px;height:40px;border-radius:50%;background:var(--paw);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;transition:background .18s;color:white}
+.chat-send:hover{background:var(--bark)}.chat-send:disabled{background:var(--border);cursor:not-allowed}
+.quick-prompts{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.quick-chip{padding:5px 12px;border-radius:20px;border:1.5px solid var(--border);background:var(--warm-white);color:var(--bark-light);font-size:12px;cursor:pointer;transition:all .15s;font-family:'DM Sans',sans-serif}
+.quick-chip:hover{border-color:var(--paw);color:var(--paw);background:var(--paw-muted)}
+.toast{position:fixed;bottom:18px;right:18px;background:var(--bark);color:var(--cream);padding:10px 16px;border-radius:11px;font-size:13px;z-index:400;transform:translateY(80px);opacity:0;transition:all .3s;pointer-events:none;max-width:260px}
+.toast.show{transform:translateY(0);opacity:1}
+@media(max-width:560px){.hero{flex-wrap:wrap}.hero-stats{flex-direction:row;width:100%}.form-row{grid-template-columns:1fr}.topbar{padding:0 10px}.nav-tab{padding:5px 8px;font-size:11px}.topbar-brand span{display:none}}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="topbar-brand">🐾 Boris Care <span>pet tracker</span></div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showPage('tasks',this)">Tasks</button>
+    <button class="nav-tab" onclick="showPage('health',this)">Health</button>
+    <button class="nav-tab" onclick="showPage('expenses',this)">Expenses</button>
+    <button class="nav-tab" onclick="showPage('ai',this)">✦ AI</button>
+  </div>
+</div>
+<div class="main">
+  <div class="hero">
+    <div class="hero-paw">🐕</div>
+    <div class="hero-info">
+      <div class="hero-name">Boris</div>
+      <div class="hero-meta"><span>🐾 Dog</span><span>🎂 15 years old</span><span id="hero-weight-display"></span></div>
+      <div class="senior-tag">⭐ Senior dog</div>
+    </div>
+    <div class="hero-stats">
+      <div class="hero-stat"><div class="hero-stat-val" id="stat-overdue">0</div><div class="hero-stat-lbl">Overdue</div></div>
+      <div class="hero-stat"><div class="hero-stat-val" id="stat-soon">0</div><div class="hero-stat-lbl">Due soon</div></div>
+    </div>
+  </div>
+
+  <!-- TASKS -->
+  <div class="page active" id="page-tasks">
+    <div class="notif-banner hidden" id="notif-banner">
+      <div style="font-size:20px">🔔</div>
+      <div class="notif-banner-text"><strong>Enable notifications for Boris's tasks</strong>Get reminded when tasks are due.</div>
+      <button class="btn btn-sm btn-primary" onclick="requestNotifPermission()">Enable</button>
+      <button class="btn btn-sm btn-ghost" onclick="dismissNotifBanner()">✕</button>
+    </div>
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">Recurring Tasks</div>
+        <div style="display:flex;gap:7px;align-items:center">
+          <button class="btn btn-outline btn-sm" onclick="openNotifSettingsModal()">🔔 Reminders</button>
+          <button class="btn btn-primary" onclick="openTaskModal()">+ Add task</button>
+        </div>
+      </div>
+      <div class="cat-filter" id="task-filter">
+        <div class="cat-pill active" onclick="filterTasks('all',this)">All</div>
+        <div class="cat-pill" onclick="filterTasks('food',this)">Food</div>
+        <div class="cat-pill" onclick="filterTasks('wellness',this)">Wellness</div>
+        <div class="cat-pill" onclick="filterTasks('vet',this)">Vet</div>
+        <div class="cat-pill" onclick="filterTasks('grooming',this)">Grooming</div>
+        <div class="cat-pill" onclick="filterTasks('supplies',this)">Supplies</div>
+      </div>
+      <div class="task-list" id="task-list"></div>
+    </div>
+  </div>
+
+  <!-- HEALTH -->
+  <div class="page" id="page-health">
+    <div class="section">
+      <div class="section-header"><div class="section-title">Health Overview</div><button class="btn btn-primary" onclick="openHealthModal()">+ Log entry</button></div>
+      <div class="health-grid">
+        <div class="health-card"><div class="health-card-icon">⚖️</div><div class="health-card-lbl">Current weight</div><div class="health-card-val" id="current-weight">—</div><div class="health-card-unit">kg</div><div class="health-trend" id="weight-trend"></div></div>
+        <div class="health-card"><div class="health-card-icon">📅</div><div class="health-card-lbl">Last logged</div><div class="health-card-val" id="last-logged" style="font-size:14px;margin-top:9px">—</div></div>
+        <div class="health-card"><div class="health-card-icon">📊</div><div class="health-card-lbl">Total entries</div><div class="health-card-val" id="total-entries">0</div></div>
+        <div class="health-card"><div class="health-card-icon">🏥</div><div class="health-card-lbl">Last vet visit</div><div class="health-card-val" id="last-vet" style="font-size:13px;margin-top:8px">—</div></div>
+      </div>
+      <div class="section-header"><div class="section-title" style="font-size:16px">Weight history</div></div>
+      <div class="log-list" id="health-log"></div>
+    </div>
+  </div>
+
+  <!-- EXPENSES -->
+  <div class="page" id="page-expenses">
+    <div class="section">
+      <div class="section-header"><div class="section-title">Expense Tracker</div><button class="btn btn-primary" onclick="openExpenseModal()">+ Add expense</button></div>
+      <div class="expense-summary">
+        <div class="exp-card"><div class="exp-card-lbl">This month</div><div class="exp-card-val" id="exp-month">$0</div><div class="exp-card-sub">total spent</div></div>
+        <div class="exp-card"><div class="exp-card-lbl">This year</div><div class="exp-card-val" id="exp-year">$0</div><div class="exp-card-sub">total spent</div></div>
+        <div class="exp-card"><div class="exp-card-lbl">All time</div><div class="exp-card-val" id="exp-total">$0</div><div class="exp-card-sub">total spent</div></div>
+      </div>
+      <div class="cat-filter" id="exp-filter">
+        <div class="cat-pill active" onclick="filterExpenses('all',this)">All</div>
+        <div class="cat-pill" onclick="filterExpenses('food',this)">Food</div>
+        <div class="cat-pill" onclick="filterExpenses('vet',this)">Vet</div>
+        <div class="cat-pill" onclick="filterExpenses('wellness',this)">Wellness</div>
+        <div class="cat-pill" onclick="filterExpenses('grooming',this)">Grooming</div>
+        <div class="cat-pill" onclick="filterExpenses('supplies',this)">Supplies</div>
+        <div class="cat-pill" onclick="filterExpenses('other',this)">Other</div>
+      </div>
+      <div class="expense-list" id="expense-list"></div>
+    </div>
+  </div>
+
+  <!-- AI -->
+  <div class="page" id="page-ai">
+    <div class="ai-page">
+      <div class="api-setup">
+        <div class="api-setup-title">✦ Connect AI — Enter your Anthropic API key</div>
+        <div class="api-row"><input class="api-input" type="password" id="api-key-input" placeholder="sk-ant-api03-…" autocomplete="off"><button class="btn btn-primary btn-sm" onclick="saveApiKey()">Connect</button></div>
+        <div class="api-status" id="api-status">Your key is stored only in this browser, never sent anywhere except Anthropic's API.</div>
+        <div style="margin-top:7px;font-size:12px;color:var(--bark-light)">Get key at <a href="https://console.anthropic.com" target="_blank" style="color:var(--paw)">console.anthropic.com</a></div>
+      </div>
+      <div class="quick-prompts">
+        <button class="quick-chip" onclick="sendQuick(this)">What tasks are overdue?</button>
+        <button class="quick-chip" onclick="sendQuick(this)">Is Boris's weight healthy?</button>
+        <button class="quick-chip" onclick="sendQuick(this)">Senior dog care tips</button>
+        <button class="quick-chip" onclick="sendQuick(this)">Summarize this month's expenses</button>
+        <button class="quick-chip" onclick="sendQuick(this)">What should I prioritize this week?</button>
+        <button class="quick-chip" onclick="sendQuick(this)">Supplements for a 15 year old dog</button>
+      </div>
+      <div class="chat-window" id="chat-window">
+        <div class="chat-bubble ai"><div class="ai-avatar">🐾</div><div class="bubble-inner">Hi! I'm Boris's AI care assistant. I have full access to his tasks, health logs, and expenses. Try a quick prompt above or ask me anything!</div><div class="bubble-time">Now</div></div>
+      </div>
+      <div class="chat-input-row">
+        <textarea class="chat-input" id="chat-input" placeholder="Ask about Boris's care…" rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+        <button class="chat-send" id="send-btn" onclick="sendMessage()">➤</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TASK MODAL -->
+<div class="modal-overlay" id="task-modal">
+  <div class="modal">
+    <div class="modal-title"><span id="task-modal-title">Add recurring task</span><button class="modal-close" onclick="closeModal('task-modal')">✕</button></div>
+    <div class="form-group"><label class="form-label">Task name</label><input class="form-control" id="t-name" placeholder="e.g. Order meals, Vet check-up…"></div>
+    <div class="form-group"><label class="form-label">Category</label>
+      <select class="form-control" id="t-cat">
+        <option value="food">🍖 Food & Meals</option>
+        <option value="vet">🏥 Vet & Medical</option>
+        <option value="wellness">💆 Wellness</option>
+        <option value="grooming">✨ Grooming</option>
+        <option value="supplies">💊 Supplements & Supplies</option>
+        <option value="other">📌 Other</option>
+      </select>
+    </div>
+    <div class="form-group"><label class="form-label">Pick an icon</label>
+      <div class="emoji-grid" id="emoji-grid">
+        <button class="emoji-btn selected" data-emoji="🍖">🍖</button>
+        <button class="emoji-btn" data-emoji="🥩">🥩</button>
+        <button class="emoji-btn" data-emoji="🐟">🐟</button>
+        <button class="emoji-btn" data-emoji="🏥">🏥</button>
+        <button class="emoji-btn" data-emoji="💊">💊</button>
+        <button class="emoji-btn" data-emoji="💉">💉</button>
+        <button class="emoji-btn" data-emoji="💆">💆</button>
+        <button class="emoji-btn" data-emoji="🌿">🌿</button>
+        <button class="emoji-btn" data-emoji="✨">✨</button>
+        <button class="emoji-btn" data-emoji="🛁">🛁</button>
+        <button class="emoji-btn" data-emoji="🦷">🦷</button>
+        <button class="emoji-btn" data-emoji="🐾">🐾</button>
+        <button class="emoji-btn" data-emoji="🎾">🎾</button>
+        <button class="emoji-btn" data-emoji="🧴">🧴</button>
+        <button class="emoji-btn" data-emoji="📦">📦</button>
+        <button class="emoji-btn" data-emoji="🛒">🛒</button>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Frequency</label>
+        <select class="form-control" id="t-freq">
+          <option value="7">Every week</option>
+          <option value="14">Every 2 weeks</option>
+          <option value="21">Every 3 weeks</option>
+          <option value="30">Every month</option>
+          <option value="42">Every 6 weeks</option>
+          <option value="60">Every 2 months</option>
+          <option value="90">Every 3 months</option>
+          <option value="180">Every 6 months</option>
+          <option value="365">Every year</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Last done</label><input class="form-control" type="date" id="t-last"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Note / Provider (optional)</label><input class="form-control" id="t-note" placeholder="e.g. Dr. Lim Clinic, Hills Science Diet"></div>
+    <div class="divider"></div>
+    <div class="form-group"><label class="form-label">🔔 Notify me when due</label>
+      <select class="form-control" id="t-notif">
+        <option value="none">No notification</option>
+        <option value="onday">On the day it's due</option>
+        <option value="1day">1 day before</option>
+        <option value="2day">2 days before</option>
+        <option value="3day">3 days before</option>
+        <option value="1week">1 week before</option>
+      </select>
+      <div style="font-size:11px;color:var(--bark-light);margin-top:4px">Requires notification permission in your browser.</div>
+    </div>
+    <div class="form-actions"><button class="btn btn-outline" onclick="closeModal('task-modal')">Cancel</button><button class="btn btn-primary" onclick="saveTask()">Save task</button></div>
+  </div>
+</div>
+
+<!-- NOTIF SETTINGS MODAL -->
+<div class="modal-overlay" id="notif-settings-modal">
+  <div class="modal">
+    <div class="modal-title">🔔 Reminder Settings <button class="modal-close" onclick="closeModal('notif-settings-modal')">✕</button></div>
+    <div id="notif-permission-status" style="margin-bottom:12px;font-size:13px"></div>
+    <div style="font-size:13px;font-weight:600;margin-bottom:9px">Per-task reminders</div>
+    <div id="per-task-notif-list"></div>
+    <div class="divider"></div>
+    <div class="form-group"><label class="form-label">Test</label><button class="btn btn-outline btn-sm" onclick="sendTestNotif()">Send test notification</button></div>
+    <div class="form-actions"><button class="btn btn-primary" onclick="saveNotifSettings()">Save settings</button></div>
+  </div>
+</div>
+
+<!-- HEALTH MODAL -->
+<div class="modal-overlay" id="health-modal">
+  <div class="modal">
+    <div class="modal-title">Log health entry <button class="modal-close" onclick="closeModal('health-modal')">✕</button></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Weight (kg)</label><input class="form-control" type="number" step="0.1" id="h-weight" placeholder="e.g. 12.5"></div>
+      <div class="form-group"><label class="form-label">Date</label><input class="form-control" type="date" id="h-date"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Notes (optional)</label><input class="form-control" id="h-note" placeholder="e.g. Vet visit, energy level good…"></div>
+    <div class="form-actions"><button class="btn btn-outline" onclick="closeModal('health-modal')">Cancel</button><button class="btn btn-primary" onclick="saveHealth()">Save entry</button></div>
+  </div>
+</div>
+
+<!-- EXPENSE MODAL -->
+<div class="modal-overlay" id="expense-modal">
+  <div class="modal">
+    <div class="modal-title">Add expense <button class="modal-close" onclick="closeModal('expense-modal')">✕</button></div>
+    <div class="form-group"><label class="form-label">Description</label><input class="form-control" id="e-name" placeholder="e.g. Hills Science Diet 12kg bag"></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Amount ($)</label><input class="form-control" type="number" step="0.01" id="e-amount" placeholder="0.00"></div>
+      <div class="form-group"><label class="form-label">Date</label><input class="form-control" type="date" id="e-date"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Category</label>
+      <select class="form-control" id="e-cat">
+        <option value="food">Food & Meals</option>
+        <option value="vet">Vet & Medical</option>
+        <option value="wellness">Wellness</option>
+        <option value="grooming">Grooming</option>
+        <option value="supplies">Supplements & Supplies</option>
+        <option value="other">Other</option>
+      </select>
+    </div>
+    <div class="form-actions"><button class="btn btn-outline" onclick="closeModal('expense-modal')">Cancel</button><button class="btn btn-primary" onclick="saveExpense()">Save expense</button></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SK='boris_care_v3',AK='boris_anthropic_key';
+let state={tasks:[],healthLog:[],expenses:[],notifSettings:{}};
+let selectedEmoji='🍖',editingTaskId=null,taskFilter='all',expFilter='all',chatHistory=[],isAiLoading=false;
+
+function load(){try{const s=localStorage.getItem(SK);if(s)state={...state,...JSON.parse(s)}}catch(e){}['tasks','healthLog','expenses'].forEach(k=>{if(!state[k])state[k]=[]});if(!state.notifSettings)state.notifSettings={}}
+function save(){localStorage.setItem(SK,JSON.stringify(state))}
+
+function showPage(page,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  if(el)el.classList.add('active');
+  if(page==='tasks'){renderTasks();checkNotifBanner()}
+  if(page==='health')renderHealth();
+  if(page==='expenses')renderExpenses();
+  if(page==='ai')initAiPage();
+}
+
+const CAT_BG={food:'#FFF3E0',vet:'#E3F2FD',wellness:'#F3E5F5',grooming:'#E8F5E9',supplies:'#FBE9E7',other:'#F5F5F5'};
+const CAT_ICONS={food:'🍖',vet:'🏥',wellness:'💆',grooming:'✨',supplies:'💊',other:'📌'};
+
+function getDaysUntilDue(t){
+  const next=new Date(new Date(t.lastDone).getTime()+t.frequencyDays*86400000);
+  const tod=new Date();tod.setHours(0,0,0,0);
+  return Math.round((next-tod)/86400000);
+}
+function getBadge(d){
+  if(d<0)return{text:Math.abs(d)+'d overdue',cls:'badge-overdue',cardCls:'overdue'};
+  if(d===0)return{text:'Due today',cls:'badge-overdue',cardCls:'overdue'};
+  if(d<=5)return{text:'Due in '+d+'d',cls:'badge-soon',cardCls:'due-soon'};
+  return{text:'In '+d+'d',cls:'badge-ok',cardCls:''};
+}
+function freqText(d){return{7:'Every week',14:'Every 2 weeks',21:'Every 3 weeks',30:'Every month',42:'Every 6 weeks',60:'Every 2 months',90:'Every 3 months',180:'Every 6 months',365:'Every year'}[d]||'Every '+d+' days'}
+function notifLabel(v){return{none:'🔕 No reminder',onday:'🔔 On due date','1day':'🔔 1 day before','2day':'🔔 2 days before','3day':'🔔 3 days before','1week':'🔔 1 week before'}[v]||'🔕 No reminder'}
+
+function renderTasks(){
+  const list=document.getElementById('task-list');
+  let tasks=[...state.tasks];
+  if(taskFilter!=='all')tasks=tasks.filter(t=>t.category===taskFilter);
+  tasks.sort((a,b)=>getDaysUntilDue(a)-getDaysUntilDue(b));
+  let ov=0,so=0;
+  state.tasks.forEach(t=>{const d=getDaysUntilDue(t);if(d<0)ov++;else if(d<=5)so++});
+  document.getElementById('stat-overdue').textContent=ov;
+  document.getElementById('stat-soon').textContent=so;
+  if(!tasks.length){list.innerHTML='<div class="empty"><div class="empty-icon">🐾</div><p>No tasks yet.<br>Add Boris\'s first recurring task!</p></div>';return}
+  list.innerHTML=tasks.map(t=>{
+    const days=getDaysUntilDue(t),badge=getBadge(days),bg=CAT_BG[t.category]||CAT_BG.other,ns=state.notifSettings[t.id]||'none';
+    return '<div class="task-card '+badge.cardCls+'">'+
+      '<div class="task-icon" style="background:'+bg+'">'+(t.emoji||CAT_ICONS[t.category]||'📌')+'</div>'+
+      '<div class="task-body">'+
+        '<div class="task-name">'+escHtml(t.name)+'</div>'+
+        '<div class="task-freq">'+freqText(t.frequencyDays)+'</div>'+
+        (t.note?'<div class="task-note">'+escHtml(t.note)+'</div>':'')+
+        '<div class="task-notif '+(ns==='none'?'off':'')+'" onclick="quickEditNotif(\''+t.id+'\')">'+notifLabel(ns)+'</div>'+
+      '</div>'+
+      '<div class="task-right">'+
+        '<span class="badge '+badge.cls+'">'+badge.text+'</span>'+
+        '<div class="task-actions">'+
+          '<button class="btn btn-sm btn-outline" onclick="markDone(\''+t.id+'\')">✓ Done</button>'+
+          '<button class="btn btn-sm btn-warn" onclick="editTask(\''+t.id+'\')" title="Edit">✏️</button>'+
+          '<button class="btn btn-sm btn-danger" onclick="deleteTask(\''+t.id+'\')">✕</button>'+
+        '</div>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+
+function filterTasks(cat,el){taskFilter=cat;document.querySelectorAll('#task-filter .cat-pill').forEach(p=>p.classList.remove('active'));el.classList.add('active');renderTasks()}
+function markDone(id){const t=state.tasks.find(x=>x.id===id);if(t){t.lastDone=today();save();renderTasks();showToast('✓ Marked as done!');scheduleNotifs()}}
+function deleteTask(id){if(!confirm('Delete this task?'))return;state.tasks=state.tasks.filter(x=>x.id!==id);delete state.notifSettings[id];save();renderTasks();showToast('Task deleted')}
+
+function openTaskModal(){
+  editingTaskId=null;
+  document.getElementById('task-modal-title').textContent='Add recurring task';
+  document.getElementById('t-name').value='';
+  document.getElementById('t-note').value='';
+  document.getElementById('t-freq').value='14';
+  document.getElementById('t-cat').value='food';
+  document.getElementById('t-last').value=today();
+  document.getElementById('t-notif').value='none';
+  selectedEmoji='🍖';
+  document.querySelectorAll('.emoji-btn').forEach(b=>b.classList.toggle('selected',b.dataset.emoji==='🍖'));
+  document.getElementById('task-modal').classList.add('open');
+}
+
+function editTask(id){
+  const t=state.tasks.find(x=>x.id===id);if(!t)return;
+  editingTaskId=id;
+  document.getElementById('task-modal-title').textContent='Edit task';
+  document.getElementById('t-name').value=t.name;
+  document.getElementById('t-note').value=t.note||'';
+  document.getElementById('t-freq').value=t.frequencyDays;
+  document.getElementById('t-cat').value=t.category;
+  document.getElementById('t-last').value=t.lastDone;
+  document.getElementById('t-notif').value=state.notifSettings[id]||'none';
+  selectedEmoji=t.emoji||CAT_ICONS[t.category]||'🍖';
+  document.querySelectorAll('.emoji-btn').forEach(b=>b.classList.toggle('selected',b.dataset.emoji===selectedEmoji));
+  document.getElementById('task-modal').classList.add('open');
+}
+
+function saveTask(){
+  const name=document.getElementById('t-name').value.trim();
+  if(!name){showToast('Please enter a task name');return}
+  const id=editingTaskId||Date.now().toString();
+  const task={id,name,category:document.getElementById('t-cat').value,emoji:selectedEmoji,frequencyDays:parseInt(document.getElementById('t-freq').value),lastDone:document.getElementById('t-last').value,note:document.getElementById('t-note').value.trim()};
+  state.notifSettings[id]=document.getElementById('t-notif').value;
+  if(editingTaskId){const idx=state.tasks.findIndex(x=>x.id===editingTaskId);state.tasks[idx]=task}
+  else{state.tasks.push(task)}
+  save();closeModal('task-modal');renderTasks();
+  showToast(editingTaskId?'Task updated!':'Task saved!');
+  scheduleNotifs();
+}
+
+function quickEditNotif(id){
+  const opts=['none','onday','1day','2day','3day','1week'];
+  const cur=state.notifSettings[id]||'none';
+  const next=opts[(opts.indexOf(cur)+1)%opts.length];
+  state.notifSettings[id]=next;save();renderTasks();
+  if(next!=='none'){requestNotifPermission().then(()=>scheduleNotifs());showToast(notifLabel(next))}
+  else showToast('🔕 Reminder off');
+}
+
+// NOTIFICATIONS
+function checkNotifBanner(){
+  if('Notification'in window&&Notification.permission==='default'&&!localStorage.getItem('notif_banner_dismissed'))
+    document.getElementById('notif-banner').classList.remove('hidden');
+}
+function dismissNotifBanner(){document.getElementById('notif-banner').classList.add('hidden');localStorage.setItem('notif_banner_dismissed','1')}
+async function requestNotifPermission(){
+  if(!('Notification'in window)){showToast('Browser does not support notifications');return}
+  if(Notification.permission==='granted')return;
+  const p=await Notification.requestPermission();
+  if(p==='granted'){showToast('✓ Notifications enabled!');document.getElementById('notif-banner').classList.add('hidden');scheduleNotifs()}
+  else showToast('Notifications blocked — enable in browser/OS settings');
+}
+function scheduleNotifs(){
+  if(!('Notification'in window)||Notification.permission!=='granted')return;
+  const tod=new Date();tod.setHours(0,0,0,0);
+  const dateKey=tod.toISOString().split('T')[0];
+  state.tasks.forEach(task=>{
+    const setting=state.notifSettings[task.id]||'none';if(setting==='none')return;
+    const d=getDaysUntilDue(task);
+    const when={onday:0,'1day':1,'2day':2,'3day':3,'1week':7}[setting]??-1;
+    if(d===when){
+      const key='notif_'+task.id+'_'+dateKey;
+      if(!localStorage.getItem(key)){
+        const msg=d===0?task.name+' is due today!':task.name+' is due in '+d+' day'+(d>1?'s':'');
+        new Notification('🐾 Boris Care',{body:msg});
+        localStorage.setItem(key,'1');
+      }
+    }
+  });
+}
+function sendTestNotif(){
+  if(!('Notification'in window)){showToast('Not supported');return}
+  if(Notification.permission!=='granted'){requestNotifPermission().then(()=>{if(Notification.permission==='granted')sendTestNotif()});return}
+  new Notification('🐾 Boris Care',{body:'Notifications working! Boris says woof! 🐕'});
+  showToast('Test notification sent!');
+}
+function openNotifSettingsModal(){
+  const statusEl=document.getElementById('notif-permission-status');
+  if(!('Notification'in window))statusEl.innerHTML='<span style="color:var(--danger)">❌ Not supported in this browser.</span>';
+  else if(Notification.permission==='granted')statusEl.innerHTML='<span style="color:var(--leaf)">✓ Notifications are enabled.</span>';
+  else if(Notification.permission==='denied')statusEl.innerHTML='<span style="color:var(--danger)">❌ Blocked — please enable in browser/OS settings.</span>';
+  else statusEl.innerHTML='<button class="btn btn-primary btn-sm" onclick="requestNotifPermission()">Enable notifications</button>';
+  const listEl=document.getElementById('per-task-notif-list');
+  if(!state.tasks.length){listEl.innerHTML='<div style="font-size:13px;color:var(--bark-light)">No tasks yet.</div>'}
+  else{
+    listEl.innerHTML=state.tasks.map(t=>{
+      const ns=state.notifSettings[t.id]||'none';
+      return '<div class="notif-option-row">'+
+        '<div style="font-size:17px">'+(t.emoji||CAT_ICONS[t.category]||'📌')+'</div>'+
+        '<div style="flex:1;font-size:13px;font-weight:500">'+escHtml(t.name)+'</div>'+
+        '<select class="form-control" style="width:auto;font-size:12px;padding:4px 8px" id="ns-'+t.id+'">'+
+          '<option value="none" '+(ns==='none'?'selected':'')+'>No reminder</option>'+
+          '<option value="onday" '+(ns==='onday'?'selected':'')+'>On due date</option>'+
+          '<option value="1day" '+(ns==='1day'?'selected':'')+'>1 day before</option>'+
+          '<option value="2day" '+(ns==='2day'?'selected':'')+'>2 days before</option>'+
+          '<option value="3day" '+(ns==='3day'?'selected':'')+'>3 days before</option>'+
+          '<option value="1week" '+(ns==='1week'?'selected':'')+'>1 week before</option>'+
+        '</select></div>';
+    }).join('');
+  }
+  document.getElementById('notif-settings-modal').classList.add('open');
+}
+function saveNotifSettings(){
+  state.tasks.forEach(t=>{const el=document.getElementById('ns-'+t.id);if(el)state.notifSettings[t.id]=el.value});
+  save();closeModal('notif-settings-modal');renderTasks();scheduleNotifs();showToast('Reminder settings saved!');
+}
+
+// HEALTH
+function renderHealth(){
+  const logs=[...state.healthLog].sort((a,b)=>new Date(b.date)-new Date(a.date));
+  document.getElementById('total-entries').textContent=logs.length;
+  if(logs.length){
+    const l=logs[0];
+    document.getElementById('current-weight').textContent=l.weight;
+    document.getElementById('last-logged').textContent=formatDate(l.date);
+    document.getElementById('hero-weight-display').textContent='⚖️ '+l.weight+' kg';
+    if(logs.length>=2){
+      const diff=(parseFloat(l.weight)-parseFloat(logs[1].weight)).toFixed(1);
+      const tr=document.getElementById('weight-trend');
+      if(diff>0)tr.innerHTML='<span class="trend-up">↑ '+diff+' kg from last</span>';
+      else if(diff<0)tr.innerHTML='<span class="trend-dn">↓ '+Math.abs(diff)+' kg from last</span>';
+      else tr.innerHTML='<span class="trend-eq">→ no change</span>';
+    }
+  }
+  const vt=state.tasks.find(t=>t.category==='vet');
+  if(vt)document.getElementById('last-vet').textContent=formatDate(vt.lastDone);
+  const logEl=document.getElementById('health-log');
+  if(!logs.length){logEl.innerHTML='<div class="empty"><div class="empty-icon">📊</div><p>No health entries yet.<br>Log Boris\'s first weight!</p></div>';return}
+  logEl.innerHTML=logs.map(l=>'<div class="log-entry"><div class="log-date">'+formatDate(l.date)+'</div><div class="log-body"><div class="log-weight">'+l.weight+' kg</div>'+(l.note?'<div class="log-note-text">'+escHtml(l.note)+'</div>':'')+'</div><button class="btn btn-sm btn-danger" onclick="deleteHealth(\''+l.id+'\')">✕</button></div>').join('');
+}
+function openHealthModal(){document.getElementById('h-weight').value='';document.getElementById('h-note').value='';document.getElementById('h-date').value=today();document.getElementById('health-modal').classList.add('open')}
+function saveHealth(){const w=document.getElementById('h-weight').value;if(!w){showToast('Please enter a weight');return}state.healthLog.push({id:Date.now().toString(),weight:parseFloat(w).toFixed(1),date:document.getElementById('h-date').value,note:document.getElementById('h-note').value.trim()});save();closeModal('health-modal');renderHealth();showToast('Health entry saved!')}
+function deleteHealth(id){state.healthLog=state.healthLog.filter(x=>x.id!==id);save();renderHealth()}
+
+// EXPENSES
+const EXP_ICONS={food:'🍖',vet:'🏥',wellness:'💆',grooming:'✨',supplies:'💊',other:'📌'};
+function renderExpenses(){
+  const now=new Date(),tm=now.getMonth(),ty=now.getFullYear();
+  let m=0,y=0,a=0;
+  state.expenses.forEach(e=>{const d=new Date(e.date);a+=e.amount;if(d.getFullYear()===ty){y+=e.amount;if(d.getMonth()===tm)m+=e.amount}});
+  document.getElementById('exp-month').textContent='$'+m.toFixed(2);
+  document.getElementById('exp-year').textContent='$'+y.toFixed(2);
+  document.getElementById('exp-total').textContent='$'+a.toFixed(2);
+  let expenses=[...state.expenses].sort((a,b)=>new Date(b.date)-new Date(a.date));
+  if(expFilter!=='all')expenses=expenses.filter(e=>e.category===expFilter);
+  const list=document.getElementById('expense-list');
+  if(!expenses.length){list.innerHTML='<div class="empty"><div class="empty-icon">💰</div><p>No expenses yet.<br>Start tracking Boris\'s costs!</p></div>';return}
+  list.innerHTML=expenses.map(e=>'<div class="expense-row"><div class="exp-icon">'+(EXP_ICONS[e.category]||'📌')+'</div><div class="exp-body"><div class="exp-name">'+escHtml(e.name)+'</div><div class="exp-cat">'+e.category+' · '+formatDate(e.date)+'</div></div><div class="exp-amount">$'+parseFloat(e.amount).toFixed(2)+'</div><button class="btn btn-sm btn-danger" onclick="deleteExpense(\''+e.id+'\')">✕</button></div>').join('');
+}
+function filterExpenses(cat,el){expFilter=cat;document.querySelectorAll('#exp-filter .cat-pill').forEach(p=>p.classList.remove('active'));el.classList.add('active');renderExpenses()}
+function openExpenseModal(){document.getElementById('e-name').value='';document.getElementById('e-amount').value='';document.getElementById('e-date').value=today();document.getElementById('expense-modal').classList.add('open')}
+function saveExpense(){const name=document.getElementById('e-name').value.trim();const amount=parseFloat(document.getElementById('e-amount').value);if(!name||isNaN(amount)||amount<=0){showToast('Please fill in all fields');return}state.expenses.push({id:Date.now().toString(),name,amount,date:document.getElementById('e-date').value,category:document.getElementById('e-cat').value});save();closeModal('expense-modal');renderExpenses();showToast('Expense saved!')}
+function deleteExpense(id){state.expenses=state.expenses.filter(x=>x.id!==id);save();renderExpenses()}
+
+// AI CHAT
+function initAiPage(){
+  const saved=localStorage.getItem(AK);
+  if(saved){document.getElementById('api-key-input').value=saved;document.getElementById('api-status').textContent='✓ Connected! Start chatting.';document.getElementById('api-status').className='api-status ok'}
+}
+function saveApiKey(){
+  const key=document.getElementById('api-key-input').value.trim();
+  if(!key.startsWith('sk-ant-')){document.getElementById('api-status').textContent='Invalid key — should start with sk-ant-';document.getElementById('api-status').className='api-status err';return}
+  localStorage.setItem(AK,key);document.getElementById('api-status').textContent='✓ Connected!';document.getElementById('api-status').className='api-status ok';showToast('AI connected!');
+}
+function getApiKey(){return localStorage.getItem(AK)||document.getElementById('api-key-input').value.trim()}
+
+function buildCtx(){
+  const now=new Date();
+  const tasks=state.tasks.map(t=>{const d=getDaysUntilDue(t);return'- '+t.name+' ('+t.category+'): '+freqText(t.frequencyDays)+', '+(d<0?'OVERDUE by '+Math.abs(d)+' days':d===0?'DUE TODAY':'due in '+d+' days')+(t.note?', '+t.note:'')}).join('\n')||'None';
+  const health=state.healthLog.length?[...state.healthLog].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,5).map(l=>'- '+formatDate(l.date)+': '+l.weight+'kg'+(l.note?' — '+l.note:'')).join('\n'):'No entries yet';
+  const tm=now.getMonth(),ty=now.getFullYear();let mt=0;
+  state.expenses.forEach(e=>{const d=new Date(e.date);if(d.getFullYear()===ty&&d.getMonth()===tm)mt+=e.amount});
+  const exp=[...state.expenses].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,5).map(e=>'- '+formatDate(e.date)+': $'+parseFloat(e.amount).toFixed(2)+' — '+e.name+' ('+e.category+')').join('\n')||'None';
+  return'You are an AI care assistant for Boris, a 15-year-old senior dog. You have full access to his care data. Be warm, caring, and practical.\n\nTODAY: '+now.toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'})+'\n\nTASKS ('+state.tasks.length+' total):\n'+tasks+'\n\nHEALTH (recent):\n'+health+'\n\nEXPENSES (this month: $'+mt.toFixed(2)+'):\n'+exp+'\n\nRespond concisely and warmly. Use bullet points for lists. Flag urgent items clearly.';
+}
+
+async function sendMessage(){
+  const input=document.getElementById('chat-input');const msg=input.value.trim();
+  if(!msg||isAiLoading)return;
+  const key=getApiKey();if(!key||!key.startsWith('sk-ant-')){showToast('Please enter your Anthropic API key first');return}
+  input.value='';autoResize(input);
+  appendBubble('user',msg);chatHistory.push({role:'user',content:msg});
+  const tid=appendTyping();isAiLoading=true;document.getElementById('send-btn').disabled=true;
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:buildCtx(),messages:chatHistory})});
+    const data=await res.json();removeTyping(tid);
+    if(data.error)throw new Error(data.error.message);
+    const reply=data.content[0].text;chatHistory.push({role:'assistant',content:reply});appendBubble('ai',reply);
+  }catch(err){removeTyping(tid);appendBubble('ai','Error: '+err.message)}
+  isAiLoading=false;document.getElementById('send-btn').disabled=false;
+}
+function sendQuick(el){document.getElementById('chat-input').value=el.textContent;sendMessage()}
+function appendBubble(role,text){
+  const win=document.getElementById('chat-window');const div=document.createElement('div');div.className='chat-bubble '+role;
+  const c=role==='ai'?formatAiText(text):'<p>'+escHtml(text)+'</p>';
+  div.innerHTML=role==='ai'?'<div class="ai-avatar">🐾</div><div class="bubble-inner">'+c+'</div><div class="bubble-time">'+timeNow()+'</div>':'<div class="bubble-inner">'+c+'</div><div class="bubble-time">'+timeNow()+'</div>';
+  win.appendChild(div);win.scrollTop=win.scrollHeight;
+}
+function formatAiText(t){
+  let s=t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>');
+  const lines=s.split('\n');let html='',ul=false;
+  lines.forEach(l=>{if(/^[-•]\s/.test(l)){if(!ul){html+='<ul>';ul=true}html+='<li>'+l.slice(2)+'</li>'}else{if(ul){html+='</ul>';ul=false}if(l.trim())html+='<p>'+l+'</p>'}});
+  if(ul)html+='</ul>';return html;
+}
+function appendTyping(){const win=document.getElementById('chat-window');const id='t'+Date.now();const div=document.createElement('div');div.className='chat-bubble ai';div.id=id;div.innerHTML='<div class="ai-avatar">🐾</div><div class="bubble-inner"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></div>';win.appendChild(div);win.scrollTop=win.scrollHeight;return id}
+function removeTyping(id){const el=document.getElementById(id);if(el)el.remove()}
+function handleKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage()}}
+function autoResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,100)+'px'}
+function timeNow(){return new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})}
+
+// MODAL
+function closeModal(id){document.getElementById(id).classList.remove('open')}
+document.querySelectorAll('.modal-overlay').forEach(m=>{m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open')})});
+document.getElementById('emoji-grid').addEventListener('click',e=>{const btn=e.target.closest('.emoji-btn');if(!btn)return;selectedEmoji=btn.dataset.emoji;document.querySelectorAll('.emoji-btn').forEach(b=>b.classList.remove('selected'));btn.classList.add('selected')});
+
+// UTILS
+function today(){return new Date().toISOString().split('T')[0]}
+function formatDate(d){if(!d)return'—';return new Date(d+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}
+function escHtml(t){return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800)}
+
+// SEED
+function seedIfEmpty(){
+  if(state.tasks.length>0)return;
+  const daysAgo=n=>{const d=new Date();d.setDate(d.getDate()-n);return d.toISOString().split('T')[0]};
+  state.tasks=[
+    {id:'1',name:'Order pet meals',category:'food',emoji:'🍖',frequencyDays:14,lastDone:daysAgo(16),note:'Hills Science Diet Senior'},
+    {id:'2',name:'Massage booking',category:'wellness',emoji:'💆',frequencyDays:30,lastDone:daysAgo(28),note:'Senior mobility support'},
+    {id:'3',name:'Acupuncture',category:'wellness',emoji:'🌿',frequencyDays:14,lastDone:daysAgo(11),note:'Pain management'},
+    {id:'4',name:'Vet check-up',category:'vet',emoji:'🏥',frequencyDays:90,lastDone:daysAgo(20),note:''},
+    {id:'5',name:'Grooming',category:'grooming',emoji:'✨',frequencyDays:42,lastDone:daysAgo(10),note:''},
+    {id:'6',name:'Buy supplements',category:'supplies',emoji:'💊',frequencyDays:30,lastDone:daysAgo(14),note:'Glucosamine + Omega 3'},
+  ];
+  state.notifSettings={'1':'2day','2':'1day','3':'1day','4':'1week','5':'3day','6':'2day'};
+  save();
+}
+
+// INIT
+load();seedIfEmpty();renderTasks();checkNotifBanner();scheduleNotifs();
+setInterval(scheduleNotifs,3600000);
+</script>
+</body>
+</html>
